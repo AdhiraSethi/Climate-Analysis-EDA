@@ -1,14 +1,10 @@
-"""
-Main Streamlit application — Global Temperature EDA Explorer.
-Run:  streamlit run app/app.py
-"""
+
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import streamlit as st
 import pandas as pd
 
-# ── Project modules ─────────────────────────────────────────────────────────
 from src.data_loader   import load_dataset
 from src.preprocessing import preprocess, missing_value_report
 from src.analysis      import (
@@ -30,7 +26,6 @@ from app.components import (
     section_header, fancy_divider, metric_row, info_pill, warn_pill,
 )
 
-# ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Global Temperature Explorer",
     page_icon="🌡️",
@@ -39,7 +34,6 @@ st.set_page_config(
 )
 inject_css()
 
-# ── Cached data loaders ──────────────────────────────────────────────────────
 
 @st.cache_data(show_spinner=False)
 def get_global():
@@ -61,14 +55,10 @@ def get_city_sample(n: int = 400_000):
     df = load_dataset('city', nrows=n)
     return preprocess(df)
 
-# ── Navigation ───────────────────────────────────────────────────────────────
 
 page = sidebar_nav()
 hero_banner()
 
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: OVERVIEW
-# ════════════════════════════════════════════════════════════════════════════
 
 if page == "Overview":
     with st.spinner("Loading datasets…"):
@@ -76,7 +66,6 @@ if page == "Overview":
         c_df  = get_country()
         mc_df = get_major_city()
 
-    # ── KPI Metrics ──────────────────────────────────────────────────────────
     section_header("📋  Dataset Overview")
 
     metric_row([
@@ -96,8 +85,7 @@ if page == "Overview":
 
     fancy_divider()
 
-    # ── Dataset previews ──────────────────────────────────────────────────────
-    tab1, tab2, tab3 = st.tabs(["🌍 Global", "🌏 By Country", "🏙️ Major Cities"])
+     tab1, tab2, tab3 = st.tabs(["🌍 Global", "🌏 By Country", "🏙️ Major Cities"])
 
     with tab1:
         section_header("Global Temperatures — Sample")
@@ -131,23 +119,18 @@ if page == "Overview":
 
     fancy_divider()
 
-    # ── Summary stats ─────────────────────────────────────────────────────────
-    section_header("📊  Descriptive Statistics — Global Dataset")
+     section_header("📊  Descriptive Statistics — Global Dataset")
     st.dataframe(summary_stats(g_df), use_container_width=True)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: GLOBAL TRENDS
-# ════════════════════════════════════════════════════════════════════════════
-
+ 
 elif page == "Global Trends":
     with st.spinner("Loading global data…"):
         g_df = get_global()
 
     section_header("🌍  Global Land Temperature Trends")
 
-    # Year range filter
-    yr_min, yr_max = int(g_df['year'].min()), int(g_df['year'].max())
+     yr_min, yr_max = int(g_df['year'].min()), int(g_df['year'].max())
     y1, y2 = st.slider("Year range", yr_min, yr_max, (yr_min, yr_max))
     g_filtered = g_df[(g_df['year'] >= y1) & (g_df['year'] <= y2)]
 
@@ -177,16 +160,12 @@ elif page == "Global Trends":
     st.plotly_chart(plot_correlation_heatmap(corr), use_container_width=True)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: COUNTRY ANALYSIS
-# ════════════════════════════════════════════════════════════════════════════
 
 elif page == "Country Analysis":
     with st.spinner("Loading country data…"):
         c_df = get_country()
 
-    # ── Top warming countries ─────────────────────────────────────────────────
-    section_header("🔥  Countries with Greatest Warming")
+     section_header("🔥  Countries with Greatest Warming")
     n_countries = st.slider("How many countries to show?", 5, 30, 15)
     warming_df = top_warming_countries(c_df, n=n_countries)
     if not warming_df.empty:
@@ -194,8 +173,7 @@ elif page == "Country Analysis":
 
     fancy_divider()
 
-    # ── Single-country deep-dive ──────────────────────────────────────────────
-    section_header("🔍  Country Deep-Dive")
+     section_header("🔍  Country Deep-Dive")
     all_countries = sorted(c_df['Country'].dropna().unique().tolist())
     selected_country = st.selectbox("Select a country", all_countries,
                                      index=all_countries.index('India') if 'India' in all_countries else 0)
@@ -210,14 +188,8 @@ elif page == "Country Analysis":
 
     fancy_divider()
 
-    # ── Choropleth ────────────────────────────────────────────────────────────
-    section_header("🗺️  Global Temperature Choropleth")
+     section_header("🗺️  Global Temperature Choropleth")
     st.plotly_chart(plot_country_choropleth(c_df), use_container_width=True)
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: CITY ANALYSIS
-# ════════════════════════════════════════════════════════════════════════════
 
 elif page == "City Analysis":
     with st.spinner("Loading major-city data…"):
@@ -249,18 +221,13 @@ elif page == "City Analysis":
         else:
             warn_pill(f"No data found for {selected_city}")
 
-        # Monthly box-plot for selected city
-        section_header(f"📦  {selected_city} — Monthly Distribution")
+         section_header(f"📦  {selected_city} — Monthly Distribution")
         city_data = mc_df[mc_df['City'].str.title() == selected_city.title()]
         mb = monthly_boxplot_data(city_data)
         if not mb.empty:
             st.plotly_chart(plot_monthly_boxplot(mb), use_container_width=True)
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: DISTRIBUTIONS
-# ════════════════════════════════════════════════════════════════════════════
-
+ 
 elif page == "Distributions":
     with st.spinner("Loading data…"):
         g_df  = get_global()
@@ -289,11 +256,8 @@ elif page == "Distributions":
     df_map = {"Global": g_df, "Country": c_df, "Major City": mc_df}
     st.dataframe(summary_stats(df_map[dataset_choice]), use_container_width=True)
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# PAGE: WORLD MAP
-# ════════════════════════════════════════════════════════════════════════════
-
+ 
+ 
 elif page == "World Map":
     with st.spinner("Loading map data (this may take a moment)…"):
         mc_df = get_major_city()
