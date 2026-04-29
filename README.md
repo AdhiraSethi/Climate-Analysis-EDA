@@ -127,4 +127,4 @@ Run from the `notebooks/` directory or set the Jupyter kernel's working director
 
 ## 📄 License
 
-MIT © Ishan Mehrotra
+MIT © Adhira Sethi
